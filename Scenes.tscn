@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=2]
+
+[sub_resource type="CubeMesh" id=1]
+
+[sub_resource type="ConvexPolygonShape" id=2]
+points = PoolVector3Array( -1, 1, 1, 1, 1, -1, 1, 1, 1, -1, 1, -1, -1, -1, 1, 1, -1, -1, 1, -1, 1, -1, -1, -1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, 1, 1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, -1, -1, -1, -1, 1, -1, 1, -1, -1 )
+
+[node name="Ground" type="MeshInstance"]
+transform = Transform( 19.7103, 0, 0, 0, -1.03602, 0, 0, 0, 7.2572, 0, -4.3985, 0 )
+mesh = SubResource( 1 )
+material/0 = null
+
+[node name="CollisionShape" type="CollisionShape" parent="."]
+shape = SubResource( 2 )
