@@ -2,13 +2,13 @@ extends KinematicBody
 
 export var speed = 100
 export var acceleration = 100
-export var gravity = 50
-export var jump_power = 15
+export var gravity = 200
+export var jump_power = 8000
 export var mouse_sensitivity = 0.3
 export var sprint_speed = 200
 export var max_speed = 100
-export var dash_distance = 700
-export var dash_cooldown = 0.5
+export var dash_distance = 1000
+export var dash_cooldown = 0.2
 
 onready var head = $Head
 onready var camera = $Head/Camera 
@@ -38,6 +38,11 @@ var dash_left = false
 var dash_right = false
 var dash_backward = false
 
+var first_jump_used = false
+var double_jump_used = false
+var check_double_jump = false
+var enable_double_jump = true
+
 func _input(event):
 	if event is InputEventMouseMotion:
 		head.rotate_y(deg2rad(-event.relative.x * mouse_sensitivity)) # rotates on x axis
@@ -56,6 +61,10 @@ func _physics_process(delta):
 	# Move forward or backward, not both
 	if Input.is_action_pressed("move_forward"):
 		direction -= head_basis.z # forward is negative on godot
+		# To not accidentally dash back and forth (mashing keys)
+		check_backward_dash = false
+		check_left_dash = false
+		check_right_dash = false
 		if double_tap_forward == true:
 			check_timer_dash = true
 			prevent_dash = true
@@ -63,6 +72,9 @@ func _physics_process(delta):
 			double_tap_forward = false
 	elif Input.is_action_pressed("move_backward"):
 		direction += head_basis.z
+		check_forward_dash = false
+		check_left_dash = false
+		check_right_dash = false
 		if double_tap_backward == true:
 			check_timer_dash = true
 			prevent_dash = true
@@ -72,6 +84,9 @@ func _physics_process(delta):
 	# Move left or right, not both
 	if Input.is_action_pressed("move_left"):
 		direction -= head_basis.x
+		check_forward_dash = false
+		check_backward_dash = false
+		check_right_dash = false
 		if double_tap_left == true:
 			check_timer_dash = true
 			prevent_dash = true
@@ -79,6 +94,9 @@ func _physics_process(delta):
 			double_tap_left = false
 	elif Input.is_action_pressed("move_right"):
 		direction += head_basis.x
+		check_forward_dash = false
+		check_backward_dash = false
+		check_left_dash = false
 		if double_tap_right == true:
 			check_timer_dash = true
 			prevent_dash = true
@@ -87,18 +105,13 @@ func _physics_process(delta):
 		
 	direction = direction.normalized() # so moving diagonally doesn't increase speed
 	
-	if Input.is_action_pressed("sprint"):
-		speed = sprint_speed
-	else:
-		speed = max_speed
-	
 	velocity = velocity.linear_interpolate(direction * speed, acceleration * delta) 
 	
-	velocity.y -= gravity
+	velocity.y -= gravity # Gravity mechanics
 	velocity = move_and_slide(velocity, Vector3.UP)
 	
-	if Input.is_action_just_pressed("jump") and is_on_floor():
-		velocity.y -= jump_power
+	jump_and_double_jump() # jump & double jump mechanics inside
+	sprint()
 	
 	# Dash player in a direction
 	if dash_forward == true:
@@ -115,36 +128,8 @@ func _physics_process(delta):
 		dash_right = false
 	
 	# Dashing forward mechanics
-	if prevent_dash == false:
-		if (Input.is_action_just_released("move_forward") and is_on_floor()):
-			check_double_tap = true
-			check_forward_dash = true
-			
-			check_left_dash = false
-			check_right_dash = false
-			check_backward_dash = false
-		elif (Input.is_action_just_released("move_backward") and is_on_floor()):
-			check_double_tap = true
-			check_backward_dash = true
-			
-			check_forward_dash = false
-			check_left_dash = false
-			check_right_dash = false
-		elif (Input.is_action_just_released("move_left") and is_on_floor()):
-			check_double_tap = true
-			check_left_dash = true
-			
-			check_forward_dash = false
-			check_right_dash = false
-			check_backward_dash = false
-		elif (Input.is_action_just_released("move_right") and is_on_floor()):
-			check_double_tap = true
-			check_right_dash = true
-			
-			check_forward_dash = false
-			check_left_dash = false
-			check_backward_dash = false
-	
+	prevent_dash()
+
 	# Dash cooldown			
 	if check_timer_dash == true:
 		timer_prevent_dash += delta
@@ -152,19 +137,80 @@ func _physics_process(delta):
 			prevent_dash = false
 			timer_prevent_dash = 0
 			check_timer_dash = false
+
+func jump_and_double_jump():
+	if is_on_floor():
+		first_jump_used = false
+		check_double_jump = false
+		enable_double_jump = false
+		double_jump_used = false
+	elif (not(is_on_floor()) and double_jump_used == false 
+		and enable_double_jump == false and first_jump_used == false):
+			check_double_jump = true # used in _process(delta)
+
+	if (Input.is_action_just_pressed("jump") and is_on_floor()):
+		velocity.y -= jump_power
+		first_jump_used = true
+		print("jump")
 		
+	if first_jump_used == true:
+		if Input.is_action_just_released("jump"):
+			check_double_jump = true
+			first_jump_used = false
+		
+	if enable_double_jump == true: # enable double jump set in _process(delta)
+		velocity.y -= jump_power
+		enable_double_jump = false # disable so that you cant do it again
+		check_double_jump = false # used in _process(delta)
+		double_jump_used = true
+		print("double jumped")
+	
+	pass
+
+func sprint():
+	if Input.is_action_pressed("sprint"):
+		speed = sprint_speed
+	else:
+		speed = max_speed
+	pass
+
+func prevent_dash():
+	if prevent_dash == false: # Prevent_dash = cooldown checker
+		if (Input.is_action_just_released("move_forward") and is_on_floor()):
+			check_double_tap = true
+			check_forward_dash = true
+			check_left_dash = false
+			check_right_dash = false
+			check_backward_dash = false
+		elif (Input.is_action_just_released("move_backward") and is_on_floor()):
+			check_double_tap = true
+			check_backward_dash = true
+			check_forward_dash = false
+			check_left_dash = false
+			check_right_dash = false
+		elif (Input.is_action_just_released("move_left") and is_on_floor()):
+			check_double_tap = true
+			check_left_dash = true
+			check_forward_dash = false
+			check_right_dash = false
+			check_backward_dash = false
+		elif (Input.is_action_just_released("move_right") and is_on_floor()):
+			check_double_tap = true
+			check_right_dash = true
+			check_forward_dash = false
+			check_left_dash = false
+			check_backward_dash = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	pass # Replace with function body.
 
-
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	if check_double_tap == true:
 		timer += delta
-		if timer < 0.2:
+		if timer < 0.1:
 			if check_forward_dash == true:
 				if Input.is_action_pressed("move_forward"):
 					double_tap_forward = true
@@ -192,6 +238,11 @@ func _process(delta):
 			double_tap_right = false
 			check_double_tap = false
 			timer = 0
+			
+	if check_double_jump == true:
+		if Input.is_action_pressed("jump"):
+			enable_double_jump = true
+			
 	if Input.is_action_just_pressed("ui_cancel"):
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	if Input.is_action_just_pressed("restart"):

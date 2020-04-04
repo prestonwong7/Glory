@@ -1,35 +1,51 @@
-[gd_scene load_steps=15 format=2]
+[gd_scene load_steps=18 format=2]
 
 [ext_resource path="res://Player/Player.gd" type="Script" id=1]
 [ext_resource path="res://Spatial.gd" type="Script" id=2]
 [ext_resource path="res://Scenes.tscn" type="PackedScene" id=3]
 [ext_resource path="res://Shotgun.gd" type="Script" id=4]
 [ext_resource path="res://AllSkyFree_Godot-master/AllSkyFree/AllSkyFree_Skyboxes/Epic_GloriousPink_EquiRect.png" type="Texture" id=5]
+[ext_resource path="res://Kenney/Models/naturePack_001.obj" type="ArrayMesh" id=6]
+[ext_resource path="res://Player/AnimationPlayer_Manager.gd" type="Script" id=7]
 
 [sub_resource type="CubeMesh" id=1]
 
-[sub_resource type="CapsuleShape" id=2]
+[sub_resource type="Animation" id=2]
+resource_name = "PlayerAnimation"
+tracks/0/type = "method"
+tracks/0/path = NodePath("AnimationPlayer")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray(  ),
+"transitions": PoolRealArray(  ),
+"values": [  ]
+}
+
+[sub_resource type="CapsuleShape" id=3]
 radius = 0.75
 height = 1.25
 
-[sub_resource type="CapsuleMesh" id=3]
+[sub_resource type="CapsuleMesh" id=4]
 radius = 0.75
 mid_height = 1.25
 
-[sub_resource type="BoxShape" id=4]
+[sub_resource type="BoxShape" id=5]
 
-[sub_resource type="CubeMesh" id=5]
+[sub_resource type="CubeMesh" id=6]
 
-[sub_resource type="SphereMesh" id=6]
+[sub_resource type="SphereMesh" id=7]
 
-[sub_resource type="SphereShape" id=7]
+[sub_resource type="SphereShape" id=8]
 
-[sub_resource type="PanoramaSky" id=8]
+[sub_resource type="PanoramaSky" id=9]
 panorama = ExtResource( 5 )
 
-[sub_resource type="Environment" id=9]
+[sub_resource type="Environment" id=10]
 background_mode = 2
-background_sky = SubResource( 8 )
+background_sky = SubResource( 9 )
 adjustment_enabled = true
 
 [node name="World" type="Spatial"]
@@ -38,12 +54,12 @@ script = ExtResource( 2 )
 
 [node name="Player" type="KinematicBody" parent="."]
 script = ExtResource( 1 )
-jump_power = 4000
 
 [node name="Head" type="Spatial" parent="Player"]
 
 [node name="Camera" type="Camera" parent="Player/Head"]
 transform = Transform( 0.109127, 0, 0, 0, 0.109127, 0, 0, 0, 0.109127, 0, 0.644321, 0 )
+current = true
 fov = 80.0
 far = 400.0
 
@@ -57,13 +73,17 @@ transform = Transform( 2.459, 0, 0, 0, 2.872, 0, 0, 0, 1, 0, 0, 0 )
 mesh = SubResource( 1 )
 material/0 = null
 
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Player/Head"]
+anims/PlayerAnimation = SubResource( 2 )
+script = ExtResource( 7 )
+
 [node name="CollisionShape" type="CollisionShape" parent="Player"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 0, 0 )
-shape = SubResource( 2 )
+shape = SubResource( 3 )
 
 [node name="MeshInstance" type="MeshInstance" parent="Player"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, 0, 0 )
-mesh = SubResource( 3 )
+mesh = SubResource( 4 )
 material/0 = null
 
 [node name="Weapon" type="Node" parent="Player"]
@@ -76,37 +96,37 @@ transform = Transform( 19.7103, 0, 0, 0, -1.03602, 0, 0, 0, 7.2572, -0.416198, -
 [node name="StaticBody" type="StaticBody" parent="Ground"]
 
 [node name="CollisionShape" type="CollisionShape" parent="Ground/StaticBody"]
-shape = SubResource( 4 )
+shape = SubResource( 5 )
 
 [node name="Ground2" parent="." instance=ExtResource( 3 )]
 transform = Transform( 19.7103, 0, 0, 0, -1.03602, 0, 0, 0, 7.2572, 0, -4.3985, 19.2263 )
 layers = 63
-mesh = SubResource( 5 )
+mesh = SubResource( 6 )
 
 [node name="StaticBody" type="StaticBody" parent="Ground2"]
 
 [node name="CollisionShape" type="CollisionShape" parent="Ground2/StaticBody"]
-shape = SubResource( 4 )
+shape = SubResource( 5 )
 
 [node name="Ground3" parent="." instance=ExtResource( 3 )]
 transform = Transform( 19.7103, 0, 0, 0, -1.03602, 0, 0, 0, 7.2572, -1.96506, -3.36444, 41.3144 )
 layers = 63
-mesh = SubResource( 5 )
+mesh = SubResource( 6 )
 
 [node name="StaticBody" type="StaticBody" parent="Ground3"]
 
 [node name="CollisionShape" type="CollisionShape" parent="Ground3/StaticBody"]
-shape = SubResource( 4 )
+shape = SubResource( 5 )
 
 [node name="Ground4" parent="." instance=ExtResource( 3 )]
 transform = Transform( 19.7103, 0, 0, 0, -1.03602, 0, 0, 0, 7.2572, -50.7879, -5.65282, 41.4711 )
 layers = 63
-mesh = SubResource( 5 )
+mesh = SubResource( 6 )
 
 [node name="StaticBody" type="StaticBody" parent="Ground4"]
 
 [node name="CollisionShape" type="CollisionShape" parent="Ground4/StaticBody"]
-shape = SubResource( 4 )
+shape = SubResource( 5 )
 
 [node name="Enemy" type="StaticBody" parent="." groups=[
 "Enemy",
@@ -115,12 +135,12 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0487764, -2.60178e-08, 0.60
 
 [node name="MeshInstance" type="MeshInstance" parent="Enemy"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00125135, 0.0136895, 3.30284 )
-mesh = SubResource( 6 )
+mesh = SubResource( 7 )
 material/0 = null
 
 [node name="CollisionShape" type="CollisionShape" parent="Enemy"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.111038, 0.09487, 3.24579 )
-shape = SubResource( 7 )
+shape = SubResource( 8 )
 
 [node name="Enemy2" type="StaticBody" parent="." groups=[
 "Enemy",
@@ -129,15 +149,15 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.19624, -0.863902, 13.5833 )
 
 [node name="MeshInstance" type="MeshInstance" parent="Enemy2"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00125122, 0.0136895, 3.30284 )
-mesh = SubResource( 6 )
+mesh = SubResource( 7 )
 material/0 = null
 
 [node name="CollisionShape" type="CollisionShape" parent="Enemy2"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3.29346 )
-shape = SubResource( 7 )
+shape = SubResource( 8 )
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource( 9 )
+environment = SubResource( 10 )
 
 [node name="UI" type="Control" parent="."]
 anchor_right = 1.0
@@ -161,3 +181,10 @@ autowrap = true
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="naturePack_001" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3.17643, 1.23521, -5.28882 )
+mesh = ExtResource( 6 )
+material/0 = null
+material/1 = null
+material/2 = null
