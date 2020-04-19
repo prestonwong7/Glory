@@ -1,0 +1,24 @@
+[gd_scene format=2]
+
+[node name="UI" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_top = 2.45547
+margin_bottom = 2.45544
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="AmmoLabel" type="Label" parent="."]
+margin_left = 909.66
+margin_top = 537.898
+margin_right = 998.66
+margin_bottom = 587.898
+text = "Ammo
+2/2"
+align = 1
+valign = 1
+autowrap = true
+__meta__ = {
+"_edit_use_anchors_": false
+}

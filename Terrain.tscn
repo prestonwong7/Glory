@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Textures/ground/grass_albedo_bump.png" type="Texture" id=1]
+[ext_resource path="res://addons/zylann.hterrain/hterrain.gd" type="Script" id=2]
+[ext_resource path="res://Textures/ground/leaves_albedo_bump.png" type="Texture" id=3]
+
+[node name="Terrain" type="Node"]
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+
+[node name="HTerrain" type="Spatial" parent="."]
+script = ExtResource( 2 )
+_terrain_data = null
+chunk_size = 64
+shader_type = "Classic4"
+custom_shader = null
+shader_params/u_ground_uv_scale = 20
+shader_params/u_depth_blending = true
+shader_params/u_triplanar = false
+shader_params/u_globalmap_blend_start = null
+shader_params/u_globalmap_blend_distance = null
+ground/albedo_bump_0 = ExtResource( 1 )
+ground/normal_roughness_0 = ExtResource( 3 )
+ground/albedo_bump_1 = ExtResource( 3 )
+ground/normal_roughness_1 = ExtResource( 1 )
+ground/albedo_bump_2 = null
+ground/normal_roughness_2 = null
+ground/albedo_bump_3 = null
+ground/normal_roughness_3 = null
