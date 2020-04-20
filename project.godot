@@ -22,7 +22,7 @@ _global_script_classes=[ {
 "base": "Node",
 "class": "Weapon",
 "language": "GDScript",
-"path": "res://Player/Weapon.gd"
+"path": "res://Player/Weaponx.gd"
 } ]
 _global_script_class_icons={
 "HTerrainDataLoader": "",

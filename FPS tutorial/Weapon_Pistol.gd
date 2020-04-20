@@ -29,7 +29,7 @@ func equip_weapon():
 		is_weapon_enabled = true
 		
 	if player_node.animation_manager.current_state == "Idle_unarmed":
-		player_node.animation_manager.set_animation("Pistol_unequip")
+		player_node.animation_manager.set_animation("Pistol_equip")
 		
 	return false
 

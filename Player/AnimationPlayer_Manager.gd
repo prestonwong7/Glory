@@ -11,7 +11,7 @@ var states = {
 	"Pistol_fire":["Pistol_idle"],
 	"Pistol_idle":["Pistol_fire", "Pistol_reload", "Pistol_unequip", "Pistol_idle"],
 	"Pistol_reload":["Pistol_idle"],
-	"Pisttol_unequip":["Idle_unarmed"],
+	"Pistol_unequip":["Idle_unarmed"],
 	
 	# Rifle states
 	"Rifle_equip":["Rifle_idle"],
@@ -83,7 +83,7 @@ func animation_ended(anim_name):
 	
 	# Knife transitions
 	elif current_state == "Knife_equip":
-		set_animation("Knife") 
+		set_animation("Knife_idle") 
 	elif current_state == "Knife_idle":
 		pass
 	elif current_state == "Knife_fire":
