@@ -39,6 +39,8 @@ const WEAPON_NAME_TO_NUMBER = {"UNARMED":0, "KNIFE":1, "PISTOL":2, "RIFLE":3}
 var changing_weapon = false
 var changing_weapon_name = "UNARMED"
 
+var reloading_weapon = false
+
 var health = 100
 var UI_status_label
 
@@ -94,11 +96,9 @@ func _ready():
 	for weapon in weapons:
 		var weapon_node = weapons[weapon]
 		if weapon_node != null:
-			print("hello")
 			weapon_node.player_node = self
 			weapon_node.look_at(gun_aim_point_pos, Vector3(0, 1, 0))
 			weapon_node.rotate_object_local(Vector3(0, 1, 0), deg2rad((180)))
-#		print(weapon_node.player_node)
 	
 	current_weapon_name = "UNARMED"
 	changing_weapon_name = "UNARMED"
@@ -151,18 +151,20 @@ func _process(delta):
 		get_tree().reload_current_scene()
 
 func _input(event):
-	if event is InputEventMouseMotion:
-		rotation_helper.rotate_y(deg2rad(-event.relative.x * mouse_sensitivity)) # rotates on x axis
+	if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+		self.rotate_y(deg2rad(-event.relative.x * mouse_sensitivity)) # rotates moving left and right
 		
 		var x_delta = event.relative.y * mouse_sensitivity
 		if x_delta + camera_x_rotation > - 90 and x_delta + camera_x_rotation < 90:
-			camera.rotate_x(deg2rad(x_delta)) # rotates on y axis
+			rotation_helper.rotate_x(deg2rad(x_delta)) # rotates on x axis ( or moving up and down)
 			camera_x_rotation += x_delta
 
 func _physics_process(delta):
 	process_input(delta)
 	process_movement(delta)
 	process_changing_weapons(delta)
+	process_reloading(delta)
+	process_UI(delta)
 
 func process_input(delta):
 	# Get direction player is facing
@@ -239,18 +241,39 @@ func process_input(delta):
 	weapon_change_number = clamp(weapon_change_number, 0, WEAPON_NUMBER_TO_NAME.size() - 1)
 	
 	if changing_weapon == false:
-		if WEAPON_NUMBER_TO_NAME[weapon_change_number] != current_weapon_name:
-			changing_weapon_name = WEAPON_NUMBER_TO_NAME[weapon_change_number]
-			changing_weapon = true
+		if reloading_weapon == false:
+			if WEAPON_NUMBER_TO_NAME[weapon_change_number] != current_weapon_name:
+				changing_weapon_name = WEAPON_NUMBER_TO_NAME[weapon_change_number]
+				changing_weapon = true
 	
 	# Firing weapon here		
 	if Input.is_action_pressed("primary_fire"):
-		print(changing_weapon)
+		if reloading_weapon == false:
+			if changing_weapon == false:
+				var current_weapon = weapons[current_weapon_name]
+				if current_weapon != null:
+					if current_weapon.ammo_in_weapon > 0:
+						if animation_manager.current_state == current_weapon.IDLE_ANIM_NAME:
+							animation_manager.set_animation(current_weapon.FIRE_ANIM_NAME)
+					else:
+						reloading_weapon = true
+	
+	# reload
+	if reloading_weapon == false:
 		if changing_weapon == false:
-			var current_weapon = weapons[current_weapon_name]
-			if current_weapon != null:
-				if animation_manager.current_state == current_weapon.IDLE_ANIM_NAME:
-					animation_manager.set_animation(current_weapon.FIRE_ANIM_NAME)
+			if Input.is_action_just_pressed("reload"):
+				var current_weapon = weapons[current_weapon_name]
+				if current_weapon != null:
+					if current_weapon.CAN_RELOAD == true:
+						var current_anim_state = animation_manager.current_state
+						var is_reloading = false
+						for weapon in weapons:
+							var weapon_node = weapons[weapon]
+							if weapon_node != null:
+								if current_anim_state == weapon_node.RELOADING_ANIM_NAME:
+									is_reloading = true
+							if is_reloading == false:
+								reloading_weapon = true
 
 func process_movement(delta):
 	direction = direction.normalized() # so moving diagonally doesn't increase speed
@@ -426,3 +449,18 @@ func fire_bullet():
 		
 	weapons[current_weapon_name].fire_weapon()
 	
+func process_reloading(delta):
+	if reloading_weapon == true:
+		var current_weapon = weapons[current_weapon_name]
+		# just so that the player isn't unarmed
+		if current_weapon != null:
+			current_weapon.reload_weapon()
+		reloading_weapon = false
+	
+func process_UI(delta):
+	if current_weapon_name == "UNARMED" or current_weapon_name == "KNIFE":
+		UI_status_label.text = "HEALTH: " + str(health)
+	else:
+		var current_weapon = weapons[current_weapon_name]
+		UI_status_label.text = "HEALTH: " + str(health) + \
+			"\nAMMO: " + str(current_weapon.ammo_in_weapon) + "/" + str(current_weapon.spare_ammo)
