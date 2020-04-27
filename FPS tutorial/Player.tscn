@@ -3894,6 +3894,7 @@ use_filter = true
 font_data = ExtResource( 8 )
 
 [sub_resource type="RayShape" id=26]
+length = 1.21563
 
 [node name="Player" type="KinematicBody"]
 script = ExtResource( 9 )
@@ -4241,10 +4242,13 @@ expand = true
 
 [node name="Panel" type="Panel" parent="HUD"]
 modulate = Color( 1, 1, 1, 0.705882 )
-margin_top = 560.0
+margin_top = 490.0
 margin_right = 370.0
-margin_bottom = 720.0
+margin_bottom = 650.0
 custom_styles/panel = SubResource( 24 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="Panel_border" type="Panel" parent="HUD/Panel"]
 visible = false
@@ -4285,8 +4289,10 @@ valign = 1
 [node name="CrouchTween" type="Tween" parent="."]
 
 [node name="LegRaycast" type="RayCast" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.113, 0, 0 )
-cast_to = Vector3( 0, -0.871, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.113, 0.149179, 0 )
+enabled = true
+cast_to = Vector3( 0, -1.144, 0 )
 
 [node name="RayCollision" type="CollisionShape" parent="."]
+transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0.166, -0.024619, 0 )
 shape = SubResource( 26 )

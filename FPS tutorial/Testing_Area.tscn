@@ -1,7 +1,8 @@
-[gd_scene load_steps=20 format=2]
+[gd_scene load_steps=21 format=2]
 
 [ext_resource path="res://FPS tutorial/Player.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Rigidbody_hit_test.gd" type="Script" id=2]
+[ext_resource path="res://FPS tutorial/Health_Pickup.tscn" type="PackedScene" id=3]
 
 [sub_resource type="PlaneMesh" id=1]
 size = Vector2( 80, 80 )
@@ -162,7 +163,7 @@ mesh = SubResource( 4 )
 material/0 = SubResource( 5 )
 
 [node name="Player" parent="." instance=ExtResource( 1 )]
-speed = 20
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.921, 0 )
 max_speed = 100
 gravity = -60
 jump_power = 2000
@@ -332,3 +333,7 @@ shape = SubResource( 8 )
 [node name="MeshInstance" type="MeshInstance" parent="Cubes/GreenCube6"]
 mesh = SubResource( 9 )
 material/0 = SubResource( 12 )
+
+[node name="Health_Pickup" parent="." instance=ExtResource( 3 )]
+transform = Transform( 0.998486, 0, 0.0550025, 0, 1, 0, -0.0550025, 0, 0.998486, 33.956, 1.83832, 35.663 )
+kit_size = 1

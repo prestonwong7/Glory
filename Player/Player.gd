@@ -1,13 +1,13 @@
 extends KinematicBody
 
-export var speed = 300
+var speed = 300
 export var sprint_speed = 500
 export var max_speed = 300
 export var crouch_speed = 50
 export var fallspeed = -5
 export var acceleration = 100	
 
-export var gravity = -100
+export var gravity = -400
 export var jump_power = 8000
 export var dash_distance = 2000
 export var dash_cooldown = 0.2
@@ -29,9 +29,9 @@ var timer_prevent_dash = 0
 
 var check_double_tap = false
 
-# To make weapon shoot
 var animation_manager
 
+# To make weapon shoot
 var current_weapon_name = "UNARMED"
 var weapons = {"UNARMED":null, "KNIFE":null, "PISTOL":null, "RIFLE":null}
 const WEAPON_NUMBER_TO_NAME = {0:"UNARMED", 1:"KNIFE", 2:"PISTOL", 3:"RIFLE"}
@@ -42,6 +42,7 @@ var changing_weapon_name = "UNARMED"
 var reloading_weapon = false
 
 var health = 100
+const MAX_HEALTH = 150
 var UI_status_label
 
 # Dash Variables
@@ -68,12 +69,18 @@ var first_jump_used = false
 var double_jump_used = false
 var check_double_jump = false
 var enable_double_jump = true
+var jumped = false # used for velocity.y = 0 so that player cannot fly up and down
 
 var crouching = false
 
 # To slide down slopes
 var has_contact = false
 const MAX_SLOPE_ANGLE = 35
+
+var simple_audio_player = preload("res://FPS tutorial/Simple_Audio_Player.tscn")
+
+var mouse_scroll_value = 0
+const MOUSE_SENSITIVITY_SCROLL_WHEEL = 0.3
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -158,6 +165,23 @@ func _input(event):
 		if x_delta + camera_x_rotation > - 90 and x_delta + camera_x_rotation < 90:
 			rotation_helper.rotate_x(deg2rad(x_delta)) # rotates on x axis ( or moving up and down)
 			camera_x_rotation += x_delta
+			
+	if event is InputEventMouseButton and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+		if event.button_index == BUTTON_WHEEL_UP or event.button_index == BUTTON_WHEEL_DOWN:
+			if event.button_index == BUTTON_WHEEL_UP:
+				mouse_scroll_value += MOUSE_SENSITIVITY_SCROLL_WHEEL
+			elif event.button_index == BUTTON_WHEEL_DOWN:
+				mouse_scroll_value -= MOUSE_SENSITIVITY_SCROLL_WHEEL
+			
+			mouse_scroll_value = clamp(mouse_scroll_value, 0, WEAPON_NAME_TO_NUMBER.size() - 1)
+			
+			if changing_weapon == false:
+				if reloading_weapon == false:
+					var round_mouse_scroll_value = int(round(mouse_scroll_value))
+					if WEAPON_NUMBER_TO_NAME[round_mouse_scroll_value] != current_weapon_name:
+						changing_weapon_name = WEAPON_NUMBER_TO_NAME[round_mouse_scroll_value]
+						changing_weapon = true
+						mouse_scroll_value = round_mouse_scroll_value
 
 func _physics_process(delta):
 	process_input(delta)
@@ -173,7 +197,7 @@ func process_input(delta):
 
 	# Move forward or backward, not both
 	if Input.is_action_pressed("move_forward"):
-		direction += rotation_helper_basis.z # forward is negative on godot
+		direction += rotation_helper_basis.z # forward is negative on godot but camera is backward
 		# To not accidentally dash back and forth (mashing keys)
 		check_backward_dash = false
 		check_left_dash = false
@@ -215,7 +239,7 @@ func process_input(delta):
 			prevent_dash = true
 			dash_right = true
 			double_tap_right = false
-			
+	
 	dash(delta)
 	jump_and_double_jump() # jump & double jump mechanics inside
 	sprint()
@@ -245,6 +269,7 @@ func process_input(delta):
 			if WEAPON_NUMBER_TO_NAME[weapon_change_number] != current_weapon_name:
 				changing_weapon_name = WEAPON_NUMBER_TO_NAME[weapon_change_number]
 				changing_weapon = true
+				mouse_scroll_value = weapon_change_number
 	
 	# Firing weapon here		
 	if Input.is_action_pressed("primary_fire"):
@@ -277,8 +302,9 @@ func process_input(delta):
 
 func process_movement(delta):
 	direction = direction.normalized() # so moving diagonally doesn't increase speed
-	
-	velocity = velocity.linear_interpolate(direction * speed, acceleration * delta) 
+	velocity = velocity.linear_interpolate(direction * speed, acceleration * delta)
+	if jumped == false:
+		velocity.y = 0
 	
 	# Slope logic to slide down at a certain angle
 	if is_on_floor():
@@ -287,7 +313,6 @@ func process_movement(delta):
 		var floor_angle = rad2deg(acos(n.dot(Vector3(0,1,0))))
 		if floor_angle > MAX_SLOPE_ANGLE:
 			velocity.y += gravity
-			pass
 	else:
 		if !$LegRaycast.is_colliding():
 			has_contact = false
@@ -295,7 +320,6 @@ func process_movement(delta):
 			
 	if (has_contact and !(is_on_floor())):
 		move_and_collide(Vector3(0,-1,0))
-	
 	# End slope logic
 	
 	velocity = move_and_slide(velocity, Vector3.UP)
@@ -337,9 +361,10 @@ func process_changing_weapons(delta):
 func jump_and_double_jump():
 	if is_on_floor():
 		first_jump_used = false
+		double_jump_used = false
 		check_double_jump = false
 		enable_double_jump = false
-		double_jump_used = false
+		jumped = false
 	elif (not(is_on_floor()) and double_jump_used == false 
 		and enable_double_jump == false and first_jump_used == false):
 			check_double_jump = true # used in _process(delta)
@@ -348,6 +373,7 @@ func jump_and_double_jump():
 		velocity.y -= jump_power
 		first_jump_used = true
 		has_contact = false
+		jumped = true # used for velocity.y = 0
 		print("jump")
 		
 	if first_jump_used == true:
@@ -361,8 +387,6 @@ func jump_and_double_jump():
 		check_double_jump = false # used in _process(delta)
 		double_jump_used = true
 		print("double jumped")
-	
-	pass
 
 func sprint():
 	if Input.is_action_pressed("sprint"):
@@ -464,3 +488,13 @@ func process_UI(delta):
 		var current_weapon = weapons[current_weapon_name]
 		UI_status_label.text = "HEALTH: " + str(health) + \
 			"\nAMMO: " + str(current_weapon.ammo_in_weapon) + "/" + str(current_weapon.spare_ammo)
+			
+func create_sound(sound_name, position=null):
+	var audio_clone = simple_audio_player.instance()
+	var scene_root = get_tree().root.get_children()[0]
+	scene_root.add_child(audio_clone)
+	audio_clone.play_sound(sound_name, position)
+	
+func add_health(additional_health):
+	health += additional_health
+	health = clamp(health, 0, MAX_HEALTH)

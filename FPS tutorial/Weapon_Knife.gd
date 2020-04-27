@@ -31,6 +31,8 @@ func fire_weapon():
 
 		if body.has_method("bullet_hit"):
 			body.bullet_hit(DAMAGE, area.global_transform)
+			
+	player_node.create_sound("Knife_Swing", self.global_transform.origin)
 
 func equip_weapon():
 	if player_node.animation_manager.current_state == IDLE_ANIM_NAME:

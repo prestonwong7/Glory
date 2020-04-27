@@ -35,12 +35,16 @@ func fire_weapon():
 	
 	ammo_in_weapon -= 1
 	
+	player_node.create_sound("Pistol_Shot", self.global_transform.origin)
+	
 func equip_weapon():
 	if player_node.animation_manager.current_state == IDLE_ANIM_NAME:
 		is_weapon_enabled = true
 		
 	if player_node.animation_manager.current_state == "Idle_unarmed":
 		player_node.animation_manager.set_animation("Pistol_equip")
+		player_node.create_sound("Gun_Cock", player_node.global_transform.origin)
+		
 		
 	return false
 
@@ -76,6 +80,8 @@ func reload_weapon():
 			spare_ammo = 0
 		
 		player_node.animation_manager.set_animation(RELOADING_ANIM_NAME)
+		
+		player_node.create_sound("Gun_Cock", player_node.camera.global_transform.origin)
 		
 		return true
 	
