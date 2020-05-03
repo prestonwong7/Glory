@@ -10,9 +10,22 @@ export (String, FILE) var ruins_level_scene
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	start_menu = $Start_Menu
+	$Start_Menu/Button_Start.connect("pressed", self, "start_menu_button_pressed", ["start"])
+	$Start_Menu/Button_Open_Godot.connect("pressed", self, "start_menu_button_pressed", ["open_godot"])
+	$Start_Menu/Button_Options.connect("pressed", self, "start_menu_button_pressed", ["options"])
+	$Start_Menu/Button_Quit.connect("pressed", self, "start_menu_button_pressed", ["quit"])
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+func start_menu_button_pressed(button_name):
+	if button_name == "start":
+		#set_mouse_and_joypad_sensitivity()
+		Network.start_server()
+		get_tree().change_scene("res://FPS tutorial/Testing_Area.tscn")
+		
+	elif button_name == "open_godot":
+		OS.shell_open("https://godotengine.org/")
+	elif button_name == "options":
+		options_menu.visible = true
+		start_menu.visible = false
+	elif button_name == "quit":
+		get_tree().quit()

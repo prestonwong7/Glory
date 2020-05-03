@@ -1,8 +1,9 @@
-[gd_scene load_steps=21 format=2]
+[gd_scene load_steps=22 format=2]
 
 [ext_resource path="res://FPS tutorial/Player.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Rigidbody_hit_test.gd" type="Script" id=2]
 [ext_resource path="res://FPS tutorial/Health_Pickup.tscn" type="PackedScene" id=3]
+[ext_resource path="res://FPS tutorial/Testing_Area.gd" type="Script" id=4]
 
 [sub_resource type="PlaneMesh" id=1]
 size = Vector2( 80, 80 )
@@ -84,6 +85,7 @@ bounce = 0.6
 bounce = 0.6
 
 [node name="Testing_Area" type="Spatial"]
+script = ExtResource( 4 )
 
 [node name="Box" type="Spatial" parent="."]
 

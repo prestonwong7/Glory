@@ -1,8 +1,8 @@
 extends KinematicBody
 
-var speed = 300
+var speed = 200
 export var sprint_speed = 500
-export var max_speed = 300
+export var max_speed = 200
 export var crouch_speed = 50
 export var fallspeed = -5
 export var acceleration = 100	
@@ -81,6 +81,10 @@ var simple_audio_player = preload("res://FPS tutorial/Simple_Audio_Player.tscn")
 
 var mouse_scroll_value = 0
 const MOUSE_SENSITIVITY_SCROLL_WHEEL = 0.3
+
+# Multiplayer networking variables
+var player_id = 0
+var control = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -368,6 +372,8 @@ func jump_and_double_jump():
 	elif (not(is_on_floor()) and double_jump_used == false 
 		and enable_double_jump == false and first_jump_used == false):
 			check_double_jump = true # used in _process(delta)
+	else:
+		jumped = false # needed so character cannot fly through the air
 
 	if (Input.is_action_just_pressed("jump") and has_contact):
 		velocity.y -= jump_power
@@ -383,6 +389,7 @@ func jump_and_double_jump():
 		
 	if enable_double_jump == true: # enable double jump set in _process(delta)
 		velocity.y -= jump_power
+		jumped = true
 		enable_double_jump = false # disable so that you cant do it again
 		check_double_jump = false # used in _process(delta)
 		double_jump_used = true

@@ -67,6 +67,9 @@ font_data = ExtResource( 2 )
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 6 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="Background_Animation" type="Spatial" parent="."]
 
@@ -84,7 +87,7 @@ anims/Background_Animation = SubResource( 3 )
 [node name="Start_Menu" type="Panel" parent="."]
 modulate = Color( 1, 1, 1, 0.901961 )
 margin_right = 330.0
-margin_bottom = 720.0
+margin_bottom = 589.0
 custom_styles/panel = SubResource( 4 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -111,9 +114,9 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 margin_left = -155.0
-margin_top = -250.0
+margin_top = -251.292
 margin_right = 155.0
-margin_bottom = -200.0
+margin_bottom = -201.292
 custom_fonts/font = SubResource( 5 )
 text = "Start game"
 

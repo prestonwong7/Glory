@@ -33,8 +33,12 @@ _global_script_class_icons={
 [application]
 
 config/name="Glory"
-run/main_scene="res://Main.tscn"
+run/main_scene="res://FPS tutorial/Testing_Area.tscn"
 config/icon="res://icon.png"
+
+[autoload]
+
+Network="*res://Network.gd"
 
 [editor_plugins]
 
