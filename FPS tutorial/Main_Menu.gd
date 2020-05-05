@@ -40,7 +40,11 @@ func start_menu_button_pressed(button_name):
 func start_server():
 	player_name = 'Server'
 	var host = NetworkedMultiplayerENet.new()
-	print(host)
+	
+	# I'm not sure why this is needed to make it work below
+	host.set_compression_mode(NetworkedMultiplayerENet.COMPRESS_RANGE_CODER)
+	#
+	
 	var err = host.create_server(DEFAULT_PORT, MAX_PEERS)
 	
 	if (err != OK):
@@ -68,15 +72,17 @@ func join_server():
 	_set_status("Connecting...", true)
 	
 func _player_connected(id):
-	print("it worked")
+	get_tree().change_scene("res://FPS tutorial/Testing_Area.tscn")
 	pass
 
 func _player_disconnected(id):
+	get_tree().change_scene("res://FPS tutorial/Main_Menu.tscn")
 	unregister_player(id)
 	rpc("unregister_player", id)
 
 func _connected_ok():
 	rpc_id(1, "user_ready", get_tree().get_network_unique_id(), player_name)
+	print("connected ok")
 	
 # Callback from SceneTree, only for clients (not server).
 func _connected_fail():
@@ -103,10 +109,9 @@ remote func register_new_player(id, name):
 			rpc_id(id, "register_new_player", peer_id, players[peer_id])
 			
 	players[id] = name
-	spawn_player(id)
 
 remote func unregister_player(id):
-	get_node("/root/" + str(id)).queue_free()
+	#get_node("/root/" + str(id)).queue_free()
 	players.erase(id)
 	
 func quit_game():
@@ -114,6 +119,7 @@ func quit_game():
 	players.clear()
 
 func spawn_player(id):
+	print("spawn player")
 	var player_scene = load("res://FPS tutorial/Player.tscn")
 	var player = player_scene.instance()
 	
@@ -121,11 +127,11 @@ func spawn_player(id):
 	
 	if id == get_tree().get_network_unique_id():
 		player.set_network_master(id)
-		print("hi")
 		player.player_id = id
 		player.control = true
 	
 	get_parent().add_child(player)
+	spawn_player(id)
 
 func _set_status(text, isok):
 	# Simple way to show status.
