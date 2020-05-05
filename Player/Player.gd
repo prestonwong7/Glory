@@ -188,6 +188,7 @@ func _input(event):
 						mouse_scroll_value = round_mouse_scroll_value
 
 func _physics_process(delta):
+	
 	process_input(delta)
 	process_movement(delta)
 	process_changing_weapons(delta)

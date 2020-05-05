@@ -4,10 +4,14 @@ const DEFAULT_PORT = 31416
 const MAX_PEERS = 10
 var players = {}
 var player_name
+onready var status_ok
+onready var status_fail
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	status_ok = $Start_Menu/StatusOk
+	status_fail = $Start_Menu/StatusFail
 	get_tree().connect("network_peer_connected", self, "_player_connected")
 	get_tree().connect("network_peer_disconnected", self, "_player_disconnected")
 	get_tree().connect("connected_to_server", self, "_connected_ok")
@@ -21,11 +25,13 @@ func start_server():
 	var err = host.create_server(DEFAULT_PORT, MAX_PEERS)
 	
 	if (err != OK):
+		_set_status("Cant host, address in use", false)
 		join_server()
 		return
 	
 	get_tree().set_network_peer(host)
 	spawn_player(1)
+	_set_status("Waiting for player...", true)
 	
 func join_server():
 	player_name = 'Client'
@@ -43,6 +49,12 @@ func _player_disconnected(id):
 
 func _connected_ok():
 	rpc_id(1, "user_ready", get_tree().get_network_unique_id(), player_name)
+	
+# Callback from SceneTree, only for clients (not server).
+func _connected_fail():
+	_set_status("Couldn't connect", false)
+	
+	get_tree().set_network_peer(null) # Remove peer.
 
 remote func user_ready(id, player_name):
 	if get_tree().is_network_server():
@@ -81,8 +93,17 @@ func spawn_player(id):
 	
 	if id == get_tree().get_network_unique_id():
 		player.set_network_master(id)
-		
+		print("hi")
 		player.player_id = id
 		player.control = true
 	
 	get_parent().add_child(player)
+
+func _set_status(text, isok):
+	# Simple way to show status.
+	if isok:
+		status_ok.set_text(text)
+		status_fail.set_text("")
+	else:
+		status_ok.set_text("")
+		status_fail.set_text(text)
