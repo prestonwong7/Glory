@@ -53,7 +53,7 @@ func start_server():
 		return
 	
 	get_tree().set_network_peer(host)
-	spawn_player(1)
+	#spawn_player(1)
 	_set_status("Waiting for player...", true)
 	
 func join_server():
@@ -64,16 +64,30 @@ func join_server():
 		_set_status("IP address is invalid", false)
 		return
 	
+	#get_tree().set_network_master(ip)
 	var host = NetworkedMultiplayerENet.new()
 	host.set_compression_mode(NetworkedMultiplayerENet.COMPRESS_RANGE_CODER)
 	host.create_client(ip, DEFAULT_PORT)
 	get_tree().set_network_peer(host)
-	
 	_set_status("Connecting...", true)
 	
 func _player_connected(id):
 	get_tree().change_scene("res://FPS tutorial/Testing_Area.tscn")
-	pass
+	#spawn_player(1)
+	# Someone connected, start the game!
+	var fps = load("res://FPS tutorial/Testing_Area.tscn").instance()
+	# Connect deferred so we can safely erase it from the callback.
+	#fps.connect("game_finished", self, "_end_game", [], CONNECT_DEFERRED)
+
+func _end_game(with_error = ""):
+	if has_node("/root/Main_Menu"):
+		# Erase immediately, otherwise network might show errors (this is why we connected deferred above).
+		get_node("/root/Main_Menu").free()
+		show()
+	
+	get_tree().set_network_peer(null) # Remove peer.
+	
+	_set_status(with_error, false)
 
 func _player_disconnected(id):
 	get_tree().change_scene("res://FPS tutorial/Main_Menu.tscn")
@@ -120,8 +134,11 @@ func quit_game():
 
 func spawn_player(id):
 	print("spawn player")
+	get_tree().change_scene("res://FPS tutorial/Testing_Area.tscn")
 	var player_scene = load("res://FPS tutorial/Player.tscn")
 	var player = player_scene.instance()
+	
+	player.global_transform.origin = Vector3(0, -50, 0)
 	
 	player.set_name(str(id))
 	
@@ -131,7 +148,6 @@ func spawn_player(id):
 		player.control = true
 	
 	get_parent().add_child(player)
-	spawn_player(id)
 
 func _set_status(text, isok):
 	# Simple way to show status.

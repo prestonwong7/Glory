@@ -1,8 +1,8 @@
 extends KinematicBody
 
 var speed = 200
-export var sprint_speed = 500
-export var max_speed = 200
+export var sprint_speed = 200
+export var max_speed = 100
 export var crouch_speed = 50
 export var fallspeed = -5
 export var acceleration = 100	
@@ -92,8 +92,9 @@ func _ready():
 	
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
-	camera = $Rotation_Helper/Model/Camera
-	rotation_helper = $Rotation_Helper	
+	if is_network_master():
+		rotation_helper = $Rotation_Helper
+		camera = $Rotation_Helper/Model/Camera
 	
 	animation_manager = $Rotation_Helper/Model/Animation_Player
 	animation_manager.callback_function = funcref(self, "fire_bullet")
@@ -117,10 +118,11 @@ func _ready():
 	UI_status_label = $HUD/Panel/Gun_label
 	#flashlight = $Rotation_Helper/Flashlight
 
-	pass # Replace with function body.
-
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
+	if is_network_master():
+		camera.make_current()
+	
 	if check_double_tap == true:
 		timer += delta
 		if timer < 0.1:
@@ -155,45 +157,58 @@ func _process(delta):
 	if check_double_jump == true:
 		if Input.is_action_pressed("jump"):
 			enable_double_jump = true
-			
-	if Input.is_action_just_pressed("ui_cancel"):
-		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	
+	if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+		if Input.is_action_just_pressed("ui_cancel"):
+			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	if Input.is_action_just_pressed("restart"):
 		get_tree().reload_current_scene()
+		
 
 func _input(event):
-	if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
-		self.rotate_y(deg2rad(-event.relative.x * mouse_sensitivity)) # rotates moving left and right
-		
-		var x_delta = event.relative.y * mouse_sensitivity
-		if x_delta + camera_x_rotation > - 90 and x_delta + camera_x_rotation < 90:
-			rotation_helper.rotate_x(deg2rad(x_delta)) # rotates on x axis ( or moving up and down)
-			camera_x_rotation += x_delta
+	if is_network_master():
+		if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+			var rotate_y = -event.relative.x * mouse_sensitivity
+			self.rotate_y(deg2rad(rotate_y)) # rotates moving left and right
+			rpc_unreliable("rpc_rotate_character_y", rotate_y)
 			
-	if event is InputEventMouseButton and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
-		if event.button_index == BUTTON_WHEEL_UP or event.button_index == BUTTON_WHEEL_DOWN:
-			if event.button_index == BUTTON_WHEEL_UP:
-				mouse_scroll_value += MOUSE_SENSITIVITY_SCROLL_WHEEL
-			elif event.button_index == BUTTON_WHEEL_DOWN:
-				mouse_scroll_value -= MOUSE_SENSITIVITY_SCROLL_WHEEL
-			
-			mouse_scroll_value = clamp(mouse_scroll_value, 0, WEAPON_NAME_TO_NUMBER.size() - 1)
-			
-			if changing_weapon == false:
-				if reloading_weapon == false:
-					var round_mouse_scroll_value = int(round(mouse_scroll_value))
-					if WEAPON_NUMBER_TO_NAME[round_mouse_scroll_value] != current_weapon_name:
-						changing_weapon_name = WEAPON_NUMBER_TO_NAME[round_mouse_scroll_value]
-						changing_weapon = true
-						mouse_scroll_value = round_mouse_scroll_value
+			var x_delta = event.relative.y * mouse_sensitivity
+			if x_delta + camera_x_rotation > - 90 and x_delta + camera_x_rotation < 90:
+				rotation_helper.rotate_x(deg2rad(x_delta)) # rotates on x axis ( or moving up and down)
+				camera_x_rotation += x_delta
+				rpc_unreliable("rpc_rotate_character_x", x_delta)
+				
+	if is_network_master():		
+		if event is InputEventMouseButton and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+			if event.button_index == BUTTON_WHEEL_UP or event.button_index == BUTTON_WHEEL_DOWN:
+				if event.button_index == BUTTON_WHEEL_UP:
+					mouse_scroll_value += MOUSE_SENSITIVITY_SCROLL_WHEEL
+				elif event.button_index == BUTTON_WHEEL_DOWN:
+					mouse_scroll_value -= MOUSE_SENSITIVITY_SCROLL_WHEEL
+				
+				mouse_scroll_value = clamp(mouse_scroll_value, 0, WEAPON_NAME_TO_NUMBER.size() - 1)
+				
+				if changing_weapon == false:
+					if reloading_weapon == false:
+						var round_mouse_scroll_value = int(round(mouse_scroll_value))
+						if WEAPON_NUMBER_TO_NAME[round_mouse_scroll_value] != current_weapon_name:
+							changing_weapon_name = WEAPON_NUMBER_TO_NAME[round_mouse_scroll_value]
+							changing_weapon = true
+							mouse_scroll_value = round_mouse_scroll_value
+
+puppet func rpc_rotate_character_y(rotate_y):
+	self.rotate_y(deg2rad(rotate_y))
+	
+puppet func rpc_rotate_character_x(rotate_x):
+	rotation_helper.rotate_x(deg2rad(rotate_x))
 
 func _physics_process(delta):
-	
-	process_input(delta)
-	process_movement(delta)
-	process_changing_weapons(delta)
-	process_reloading(delta)
-	process_UI(delta)
+	if is_network_master():
+		process_input(delta)
+		process_movement(delta)
+		process_changing_weapons(delta)
+		process_reloading(delta)
+		process_UI(delta)
 
 func process_input(delta):
 	# Get direction player is facing
@@ -278,6 +293,7 @@ func process_input(delta):
 	
 	# Firing weapon here		
 	if Input.is_action_pressed("primary_fire"):
+		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)   
 		if reloading_weapon == false:
 			if changing_weapon == false:
 				var current_weapon = weapons[current_weapon_name]
@@ -327,6 +343,10 @@ func process_movement(delta):
 		move_and_collide(Vector3(0,-1,0))
 	# End slope logic
 	
+	velocity = move_and_slide(velocity, Vector3.UP)
+	rpc_unreliable("rpc_move_character", velocity) # will show up on the other screen
+	
+puppet func rpc_move_character(velocity):
 	velocity = move_and_slide(velocity, Vector3.UP)
 
 func process_changing_weapons(delta):
@@ -381,6 +401,7 @@ func jump_and_double_jump():
 		first_jump_used = true
 		has_contact = false
 		jumped = true # used for velocity.y = 0
+		rpc_unreliable("rpc_jump")
 		print("jump")
 		
 	if first_jump_used == true:
@@ -390,11 +411,15 @@ func jump_and_double_jump():
 		
 	if enable_double_jump == true: # enable double jump set in _process(delta)
 		velocity.y -= jump_power
+		rpc_unreliable("rpc_jump")
 		jumped = true
 		enable_double_jump = false # disable so that you cant do it again
 		check_double_jump = false # used in _process(delta)
 		double_jump_used = true
 		print("double jumped")
+		
+puppet func rpc_jump():
+	velocity.y -= jump_power
 
 func sprint():
 	if Input.is_action_pressed("sprint"):
@@ -506,3 +531,5 @@ func create_sound(sound_name, position=null):
 func add_health(additional_health):
 	health += additional_health
 	health = clamp(health, 0, MAX_HEALTH)
+	
+
