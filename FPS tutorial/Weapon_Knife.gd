@@ -41,12 +41,14 @@ func equip_weapon():
 
 	if player_node.animation_manager.current_state == "Idle_unarmed":
 		player_node.animation_manager.set_animation("Knife_equip")
+		rpc("rpc_equip_knife", player_node)
 
 	return false
 
 func unequip_weapon():
 	if player_node.animation_manager.current_state == IDLE_ANIM_NAME:
 		player_node.animation_manager.set_animation("Knife_unequip")
+		rpc("rpc_unequip_knife", player_node)
 
 	if player_node.animation_manager.current_state == "Idle_unarmed":
 		is_weapon_enabled = false
@@ -56,3 +58,10 @@ func unequip_weapon():
 
 func reload_weapon():
 	return false
+
+remote func rpc_equip_knife(player_node):
+	self.player_node.animation_manager.set_animation("Knife_equip") #self needed to refer to this player
+	
+remote func rpc_unequip_knife(player_node):
+	self.player_node.animation_manager.set_animation("Knife_unequip")
+

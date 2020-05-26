@@ -116,12 +116,13 @@ func _ready():
 	changing_weapon_name = "UNARMED"
 	
 	UI_status_label = $HUD/Panel/Gun_label
+	
 	#flashlight = $Rotation_Helper/Flashlight
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	if is_network_master():
-		camera.make_current()
+		camera.make_current() # needed here for some reason so player has their own camera
 	
 	if check_double_tap == true:
 		timer += delta
@@ -178,7 +179,7 @@ func _input(event):
 				camera_x_rotation += x_delta
 				rpc_unreliable("rpc_rotate_character_x", x_delta)
 				
-	if is_network_master():		
+	if is_network_master():
 		if event is InputEventMouseButton and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 			if event.button_index == BUTTON_WHEEL_UP or event.button_index == BUTTON_WHEEL_DOWN:
 				if event.button_index == BUTTON_WHEEL_UP:
@@ -195,12 +196,6 @@ func _input(event):
 							changing_weapon_name = WEAPON_NUMBER_TO_NAME[round_mouse_scroll_value]
 							changing_weapon = true
 							mouse_scroll_value = round_mouse_scroll_value
-
-puppet func rpc_rotate_character_y(rotate_y):
-	self.rotate_y(deg2rad(rotate_y))
-	
-puppet func rpc_rotate_character_x(rotate_x):
-	rotation_helper.rotate_x(deg2rad(rotate_x))
 
 func _physics_process(delta):
 	if is_network_master():
@@ -261,7 +256,7 @@ func process_input(delta):
 			double_tap_right = false
 	
 	dash(delta)
-	jump_and_double_jump() # jump & double jump mechanics inside
+	jump() # jump & double jump mechanics
 	sprint()
 	crouch()
 	
@@ -301,6 +296,7 @@ func process_input(delta):
 					if current_weapon.ammo_in_weapon > 0:
 						if animation_manager.current_state == current_weapon.IDLE_ANIM_NAME:
 							animation_manager.set_animation(current_weapon.FIRE_ANIM_NAME)
+							rpc("rpc_fire_weapon_animation", current_weapon.FIRE_ANIM_NAME)
 					else:
 						reloading_weapon = true
 	
@@ -343,11 +339,9 @@ func process_movement(delta):
 		move_and_collide(Vector3(0,-1,0))
 	# End slope logic
 	
-	velocity = move_and_slide(velocity, Vector3.UP)
+	# originally, velocity = move_and_slide
+	move_and_slide(velocity, Vector3.UP) # jumping now connects to other screen
 	rpc_unreliable("rpc_move_character", velocity) # will show up on the other screen
-	
-puppet func rpc_move_character(velocity):
-	velocity = move_and_slide(velocity, Vector3.UP)
 
 func process_changing_weapons(delta):
 	
@@ -383,7 +377,7 @@ func process_changing_weapons(delta):
 				current_weapon_name = changing_weapon_name
 				changing_weapon_name = ""
 
-func jump_and_double_jump():
+func jump():
 	if is_on_floor():
 		first_jump_used = false
 		double_jump_used = false
@@ -401,7 +395,6 @@ func jump_and_double_jump():
 		first_jump_used = true
 		has_contact = false
 		jumped = true # used for velocity.y = 0
-		rpc_unreliable("rpc_jump")
 		print("jump")
 		
 	if first_jump_used == true:
@@ -411,15 +404,12 @@ func jump_and_double_jump():
 		
 	if enable_double_jump == true: # enable double jump set in _process(delta)
 		velocity.y -= jump_power
-		rpc_unreliable("rpc_jump")
 		jumped = true
 		enable_double_jump = false # disable so that you cant do it again
 		check_double_jump = false # used in _process(delta)
 		double_jump_used = true
 		print("double jumped")
 		
-puppet func rpc_jump():
-	velocity.y -= jump_power
 
 func sprint():
 	if Input.is_action_pressed("sprint"):
@@ -430,7 +420,6 @@ func sprint():
 
 func dash(delta): # Dash player in a direction
 	if dash_forward == true:
-		print ("dashed forward")
 		velocity -= rotation_helper_basis.z * dash_distance
 		dash_forward = false
 	elif dash_backward == true:
@@ -505,6 +494,7 @@ func fire_bullet():
 		return
 		
 	weapons[current_weapon_name].fire_weapon()
+	rpc("rpc_fire_weapon", current_weapon_name)
 	
 func process_reloading(delta):
 	if reloading_weapon == true:
@@ -512,6 +502,7 @@ func process_reloading(delta):
 		# just so that the player isn't unarmed
 		if current_weapon != null:
 			current_weapon.reload_weapon()
+			rpc("rpc_reload_weapon", current_weapon)
 		reloading_weapon = false
 	
 func process_UI(delta):
@@ -532,4 +523,24 @@ func add_health(additional_health):
 	health += additional_health
 	health = clamp(health, 0, MAX_HEALTH)
 	
+sync func bullet_hit(damage, bullet_global_trans):
+	health -= damage
+	
+remote func rpc_move_character(velocity):
+	move_and_slide(velocity, Vector3.UP)
 
+remote func rpc_rotate_character_y(rotate_y):
+	self.rotate_y(deg2rad(rotate_y))
+	
+remote func rpc_rotate_character_x(rotate_x):
+	rotation_helper.rotate_x(deg2rad(rotate_x))
+
+remote func rpc_fire_weapon(current_weapon_name):
+	self.weapons[current_weapon_name].fire_weapon()
+
+remote func rpc_fire_weapon_animation(fire_animation_name):
+	self.animation_manager.set_animation(fire_animation_name)
+	
+remote func rpc_reload_weapon(current_weapon):
+	self.current_weapon.reload_weapon()
+	

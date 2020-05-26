@@ -43,6 +43,7 @@ func equip_weapon():
 		
 	if player_node.animation_manager.current_state == "Idle_unarmed":
 		player_node.animation_manager.set_animation("Pistol_equip")
+		rpc("rpc_equip_pistol", player_node)
 		player_node.create_sound("Gun_Cock", player_node.global_transform.origin)
 		
 		
@@ -52,6 +53,7 @@ func unequip_weapon():
 	if player_node.animation_manager.current_state == IDLE_ANIM_NAME:
 		if player_node.animation_manager.current_state != "Pistol_unequip":
 			player_node.animation_manager.set_animation("Pistol_unequip")
+			rpc("rpc_unequip_pistol", player_node)
 			
 	if player_node.animation_manager.current_state == "Idle_unarmed":
 		is_weapon_enabled = false
@@ -86,3 +88,9 @@ func reload_weapon():
 		return true
 	
 	return false
+
+remote func rpc_equip_pistol(player_node):
+	self.player_node.animation_manager.set_animation("Pistol_equip") #self needed to refer to this player
+	
+remote func rpc_unequip_pistol(player_node):
+	self.player_node.animation_manager.set_animation("Pistol_unequip")
