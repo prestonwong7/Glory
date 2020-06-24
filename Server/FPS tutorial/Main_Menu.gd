@@ -17,9 +17,8 @@ var solo_play = false
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	start_menu = $Start_Menu
-#	$Start_Menu/Button_Start.connect("pressed", self, "start_menu_button_pressed", ["start"])
+	$Start_Menu/Button_Start.connect("pressed", self, "start_menu_button_pressed", ["start"])
 	$Start_Menu/Button_Host.connect("pressed", self, "start_menu_button_pressed", ["host"])
-	$Start_Menu/Button_Options.connect("pressed", self, "start_menu_button_pressed", ["options"])
 	$Start_Menu/Button_Quit.connect("pressed", self, "start_menu_button_pressed", ["quit"])
 	
 	status_ok = $Start_Menu/StatusOk

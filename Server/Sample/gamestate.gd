@@ -16,17 +16,14 @@ func _ready():
 	
 	create_server()
 
-
 func create_server():
 	var host = NetworkedMultiplayerENet.new()
 	host.create_server(DEFAULT_PORT, MAX_PLAYERS)
 	get_tree().set_network_peer(host)
 
-
 # Callback from SceneTree, called when client connects
 func _player_connected(_id):
 	print("Client ", _id, " connected")
-
 
 # Callback from SceneTree, called when client disconnects
 func _player_disconnected(id):
@@ -35,7 +32,6 @@ func _player_disconnected(id):
 		rpc("unregister_player", id)
 	
 	print("Client ", id, " disconnected")
-
 
 # Player management functions
 remote func register_player(new_player_name):
@@ -62,7 +58,7 @@ puppetsync func unregister_player(id):
 	
 	print("Client ", id, " was unregistered")
 
-
+# Called by clients when pressing ready button in lobby
 remote func player_ready():
 	var caller_id = get_tree().get_rpc_sender_id()
 	
@@ -71,7 +67,6 @@ remote func player_ready():
 	
 	if ready_players.size() == players.size():
 		pre_start_game()
-
 
 func pre_start_game():
 	var world = load("res://World.tscn").instance()
@@ -82,7 +77,6 @@ func pre_start_game():
 		get_node("/root/World").spawn_player(random_vector2(500,500), id)
 	
 	rpc("pre_start_game")
-
 
 remote func post_start_game():
 	var caller_id = get_tree().get_rpc_sender_id()
