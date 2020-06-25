@@ -52,7 +52,6 @@ remote func register_player(new_player_name):
 		
 		print("Client ", caller_id, " registered as ", new_player_name)
 
-
 puppetsync func unregister_player(id):
 	players.erase(id)
 	
