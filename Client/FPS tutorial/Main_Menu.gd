@@ -46,6 +46,7 @@ func start_menu_button_pressed(button_name):
 	elif button_name == "quit":
 		get_tree().quit()
 
+# Solo play
 func start_server():
 	player_name = 'Server'
 	var host = NetworkedMultiplayerENet.new()

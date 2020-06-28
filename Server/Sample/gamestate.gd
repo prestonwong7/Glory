@@ -45,8 +45,10 @@ remote func register_player(new_player_name):
 		
 		# Add everyone to new player:
 		for p_id in players:
+			# called on client
 			rpc_id(caller_id, "register_player", p_id, players[p_id]) # Send each player to new dude
 		
+		# called on client
 		rpc("register_player", caller_id, players[caller_id]) # Send new dude to all players
 		# NOTE: this means new player's register gets called twice, but fine as same info sent both times
 		

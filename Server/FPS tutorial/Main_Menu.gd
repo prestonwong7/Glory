@@ -43,7 +43,7 @@ func start_server():
 	var host = NetworkedMultiplayerENet.new()
 	
 	# I'm not sure why this is needed to make it work below
-	#host.set_compression_mode(NetworkedMultiplayerENet.COMPRESS_RANGE_CODER)
+	host.set_compression_mode(NetworkedMultiplayerENet.COMPRESS_RANGE_CODER)
 	
 	var err = host.create_server(DEFAULT_PORT, MAX_PEERS)
 	if (err != OK):
@@ -72,6 +72,7 @@ func _set_status(text, isok):
 		
 func _player_connected(id):
 	rpc_id(id, "register_player", my_info)
+	print("player connected: ", id)
 
 func _player_disconnected(id):
 	unregister_player(id)
@@ -81,8 +82,16 @@ func _player_disconnected(id):
 remote func register_player(info):
 	var id = get_tree().get_rpc_sender_id()
 	players[id] = info
-	rpc("pre_configure_game")
-
+	
+	# send new player everyone else id (ON CLIENTS)
+	for player_id in players:
+		rpc_id(id, "register_player", player_id, players[player_id])
+	
+	# opposite - send everyone else the new player id (ON CLIENTS)
+	rpc("register_player", id, players[id])
+	
+	print("Client registered: ", id)
+	
 remote func unregister_player(id):
 	players.erase(id)
 	print("Client ", id, " was unregistered")
@@ -111,12 +120,13 @@ func pre_configure_game():
 		world.get_node("/root/Testing_Area/Players").add_child(player_scene)
 
 	# Tell server (remember, server is always ID=1) that this peer is done pre-configuring.
+	# Rpc = all peers
 	rpc("pre_configure_game")
 
 # Called by the client when pre_start_game	
 remote func post_start_game():
 	var caller_id = get_tree().get_rpc_sender_id()
-	var world = get_node("/root/World")
+	var world = get_node("/root/Testing_Area")
 	
 	for player in world.get_node("Players").get_children():
 		world.rpc_id(caller_id, "spawn_player", player.position, player.get_network_master())

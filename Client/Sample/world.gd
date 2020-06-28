@@ -1,6 +1,6 @@
 extends Node2D
 
-onready var Player = load("res://Player.tscn")
+onready var Player = load("res://FPS tutorial/Player.tscn")
 
 puppet func spawn_player(spawn_pos, id):
 	var player = Player.instance()
