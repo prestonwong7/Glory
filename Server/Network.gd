@@ -15,20 +15,18 @@ var solo_play = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-
 	get_tree().connect("network_peer_connected", self, "_player_connected")
 	get_tree().connect("network_peer_disconnected", self, "_player_disconnected")
 
 func start_server():
 	var host = NetworkedMultiplayerENet.new()
-	
+	print("hello")
 	# I'm not sure why this is needed to make it work below
 	host.set_compression_mode(NetworkedMultiplayerENet.COMPRESS_RANGE_CODER)
 	
 	var err = host.create_server(DEFAULT_PORT, MAX_PEERS)
 	get_tree().set_network_peer(host)
 	
-		
 func _player_connected(id):
 	print("player connected: ", id)
 
@@ -54,7 +52,7 @@ func pre_configure_game():
 	# Rpc = all peers
 	rpc("pre_configure_game")
 
-# Player management funcs
+# Client calls funcs
 remote func register_player(name):
 	var id = get_tree().get_rpc_sender_id()
 	players[id] = name

@@ -14,9 +14,6 @@ onready var address
 onready var testing_area = preload("res://FPS tutorial/Testing_Area.tscn")
 onready var player_scene = preload("res://FPS tutorial/Player.tscn")
 
-var solo_play = false
-var my_name = "Client"
-
 # Signals for GUI
 signal connection_failed()
 signal connection_succeeded()

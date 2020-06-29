@@ -7,13 +7,14 @@ const MAX_PEERS = 2
 var players = {}
 var players_done = []
 var player_name
-var start_menu
-var my_info = { name = "Johnson Magenta", favorite_color = Color8(255, 0, 255) }
+
+var my_info = { 
+	name = "Johnson Magenta",
+	favorite_color = Color8(255, 0, 255)
+}
 
 onready var address
-onready var testing_area = preload("res://FPS tutorial/Testing_Area.tscn")
 
-var solo_play = false
 var my_name = "Client"
 
 # Signals for GUI
@@ -24,17 +25,12 @@ signal players_updated()
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-
 	get_tree().connect("connected_to_server", self, "_connected_ok")
 	get_tree().connect("connection_failed", self, "_connected_fail")
 	get_tree().connect("server_disconnected", self, "_server_disconnected")
 
 func join_server():
-	var ip = address.get_text()
-	if not ip.is_valid_ip_address():
-		print("IP not valid")
-		return
-	
+	var ip = "127.0.0.1"
 	var host = NetworkedMultiplayerENet.new()
 	host.set_compression_mode(NetworkedMultiplayerENet.COMPRESS_RANGE_CODER)
 	host.create_client(ip, DEFAULT_PORT)

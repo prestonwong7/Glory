@@ -49,6 +49,7 @@ func start_menu_button_pressed(button_name):
 		world.get_node("/root/Testing_Area/Players").add_child(player_scene.instance())
 		
 	elif button_name == "host":
+		print("hi")
 		Network.start_server()
 		_set_status("Waiting for player...", true)
 		
