@@ -8,11 +8,6 @@ var players = {}
 var players_done = []
 var player_name
 
-var my_info = { 
-	name = "Johnson Magenta",
-	favorite_color = Color8(255, 0, 255)
-}
-
 onready var address
 
 var my_name = "Client"
@@ -38,6 +33,7 @@ func join_server():
 
 # Clients functions	
 func _connected_ok():
+	# my_name gets overwritten in the main class
 	rpc_id(1, "register_player", my_name)
 	print("connected ok")
 	emit_signal("connection_succeeded")

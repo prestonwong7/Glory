@@ -38,6 +38,7 @@ func _ready():
 
 func start_menu_button_pressed(button_name):
 	if button_name == "start":
+		# Solo play
 		var host = NetworkedMultiplayerENet.new()
 		
 		# I'm not sure why this is needed to make it work below
@@ -45,8 +46,6 @@ func start_menu_button_pressed(button_name):
 		var err = host.create_server(65534, 1)
 		get_tree().set_network_peer(host)
 		
-		# Solo play
-		get_tree().change_scene_to(testing_area)
 		var world = testing_area.instance()
 		get_tree().get_root().add_child(world)
 		get_tree().get_root().get_node("Main_Menu").hide()

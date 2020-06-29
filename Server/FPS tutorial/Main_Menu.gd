@@ -16,8 +16,6 @@ onready var address
 onready var testing_area = preload("res://FPS tutorial/Testing_Area.tscn")
 onready var player_scene = preload("res://FPS tutorial/Player.tscn")
 
-var solo_play = false
-
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	start_menu = $Start_Menu
@@ -32,17 +30,16 @@ func _ready():
 #	get_tree().connect("network_peer_connected", self, "_player_connected")
 #	get_tree().connect("network_peer_disconnected", self, "_player_disconnected")
 
-
 func start_menu_button_pressed(button_name):
 	if button_name == "start":
+		# Solo play
 		var host = NetworkedMultiplayerENet.new()
+		
 		# I'm not sure why this is needed to make it work below
 		host.set_compression_mode(NetworkedMultiplayerENet.COMPRESS_RANGE_CODER)
 		var err = host.create_server(65534, MAX_PEERS)
 		get_tree().set_network_peer(host)
 		
-		# Solo play
-		get_tree().change_scene_to(testing_area)
 		var world = testing_area.instance()
 		get_tree().get_root().add_child(world)
 		get_tree().get_root().get_node("Main_Menu").hide()

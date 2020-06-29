@@ -1,18 +1,17 @@
 extends Control
 
 onready var status = get_node("VBox/Status")
-#onready var status = get_node("Main_Menu")
 
 func _ready():
-	gamestate.connect("connection_failed", self, "_on_connection_failed")
-	gamestate.connect("connection_succeeded", self, "_on_connection_success")
-	gamestate.connect("server_disconnected", self, "_on_server_disconnect")
-	gamestate.connect("players_updated", self, "update_players_list")
+	Network.connect("connection_failed", self, "_on_connection_failed")
+	Network.connect("connection_succeeded", self, "_on_connection_success")
+	Network.connect("server_disconnected", self, "_on_server_disconnect")
+	Network.connect("players_updated", self, "update_players_list")
 
 
 func _on_JoinButton_pressed():
-	gamestate.my_name = $VBox/HBox/LineEdit.text
-	gamestate.connect_to_server()
+	Network.my_name = $VBox/HBox/LineEdit.text
+	Network.connect_to_server()
 
 
 func _on_connection_success():
@@ -35,12 +34,10 @@ func _on_server_disconnect():
 	
 	$Panel.hide()
 
-
 func update_players_list():
-	$Panel/Players.text = String(gamestate.get_player_list())
-
+	$Panel/Players.text = String(Network.get_player_list())
 
 func _on_ReadyButton_pressed():
 	# Tell server we are ready to join the game
 	$Panel/ReadyButton.disabled = true
-	gamestate.rpc_id(1, "player_ready")
+	Network.rpc_id(1, "player_ready")
