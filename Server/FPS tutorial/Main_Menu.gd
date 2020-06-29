@@ -1,5 +1,7 @@
 extends Control
 
+# SERVER
+
 const DEFAULT_PORT = 31416
 const MAX_PEERS = 2
 var players = {}
@@ -12,6 +14,7 @@ onready var status_ok
 onready var status_fail
 onready var address
 onready var testing_area = preload("res://FPS tutorial/Testing_Area.tscn")
+onready var player_scene = preload("res://FPS tutorial/Player.tscn")
 
 var solo_play = false
 
@@ -26,41 +29,32 @@ func _ready():
 	status_fail = $Start_Menu/StatusFail
 	address = $Start_Menu/Address
 	
-	get_tree().connect("network_peer_connected", self, "_player_connected")
-	get_tree().connect("network_peer_disconnected", self, "_player_disconnected")
+#	get_tree().connect("network_peer_connected", self, "_player_connected")
+#	get_tree().connect("network_peer_disconnected", self, "_player_disconnected")
 
 
 func start_menu_button_pressed(button_name):
 	if button_name == "start":
-		solo_play = true
-		start_server()
+		var host = NetworkedMultiplayerENet.new()
+		# I'm not sure why this is needed to make it work below
+		host.set_compression_mode(NetworkedMultiplayerENet.COMPRESS_RANGE_CODER)
+		var err = host.create_server(65534, MAX_PEERS)
+		get_tree().set_network_peer(host)
+		
+		# Solo play
+		get_tree().change_scene_to(testing_area)
+		var world = testing_area.instance()
+		get_tree().get_root().add_child(world)
+		get_tree().get_root().get_node("Main_Menu").hide()
+		world.get_node("/root/Testing_Area/Players").add_child(player_scene.instance())
+		
 	elif button_name == "host":
-		start_server()
+		Network.start_server()
+		_set_status("Waiting for player...", true)
+		
 	elif button_name == "quit":
 		get_tree().quit()
 
-func start_server():
-	var host = NetworkedMultiplayerENet.new()
-	
-	# I'm not sure why this is needed to make it work below
-	host.set_compression_mode(NetworkedMultiplayerENet.COMPRESS_RANGE_CODER)
-	
-	var err = host.create_server(DEFAULT_PORT, MAX_PEERS)
-	if (err != OK):
-		_set_status("Cant host, address in use", false)
-		return
-	
-	get_tree().set_network_peer(host)
-	_set_status("Waiting for player...", true)
-	
-	if solo_play == true:
-		get_tree().change_scene_to(testing_area)
-		var player_scene = load("res://FPS tutorial/Player.tscn").instance()
-		var world = load("res://FPS tutorial/Testing_Area.tscn").instance()
-		get_tree().get_root().add_child(world)
-		get_tree().get_root().get_node("Main_Menu").hide()
-		world.get_node("/root/Testing_Area/Players").add_child(player_scene)
-	
 func _set_status(text, isok):
 	# Simple way to show status.
 	if isok:
@@ -69,41 +63,6 @@ func _set_status(text, isok):
 	else:
 		status_ok.set_text("")
 		status_fail.set_text(text)
-		
-func _player_connected(id):
-	rpc_id(id, "register_player", my_info)
-	print("player connected: ", id)
-
-func _player_disconnected(id):
-	unregister_player(id)
-	rpc("unregister_player", id)
-
-# Player management funcs
-remote func register_player(info):
-	var id = get_tree().get_rpc_sender_id()
-	players[id] = info
-	
-	# send new player everyone else id (ON CLIENTS)
-	for player_id in players:
-		rpc_id(id, "register_player", player_id, players[player_id])
-	
-	# opposite - send everyone else the new player id (ON CLIENTS)
-	rpc("register_player", id, players[id])
-	
-	print("Client registered: ", id)
-	
-remote func unregister_player(id):
-	players.erase(id)
-	print("Client ", id, " was unregistered")
-
-remote func player_ready():
-	var caller_id = get_tree().get_rpc_sender_id()
-	
-	# Add to array if ready
-	players_ready.append(caller_id)
-
-	if players_ready.size() == players.size():
-		pre_configure_game() # call this method to start the game
 
 func pre_configure_game():
 	get_tree().get_root().get_node("Main_Menu").hide()

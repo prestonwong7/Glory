@@ -1,10 +1,10 @@
 extends Control
 
-# onready var status = get_node("VBox/Status")
-onready var status = get_node("Main_Menu")
+onready var status = get_node("VBox/Status")
+#onready var status = get_node("Main_Menu")
 
 func _ready():
-	Main_Menu.connect("connection_failed", self, "_on_connection_failed")
+	gamestate.connect("connection_failed", self, "_on_connection_failed")
 	gamestate.connect("connection_succeeded", self, "_on_connection_success")
 	gamestate.connect("server_disconnected", self, "_on_server_disconnect")
 	gamestate.connect("players_updated", self, "update_players_list")

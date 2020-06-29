@@ -1,9 +1,8 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://assets/lightblue_equirectangular.png" type="Texture" id=1]
 [ext_resource path="res://assets/Titillium-Regular.otf" type="DynamicFontData" id=2]
 [ext_resource path="res://FPS tutorial/Main_Menu.gd" type="Script" id=3]
-[ext_resource path="res://Sample/LobbyTutorial_Client_Main.tscn" type="PackedScene" id=4]
 [ext_resource path="res://Audio/Glory.ogg" type="AudioStream" id=5]
 
 [sub_resource type="PanoramaSky" id=1]
@@ -66,9 +65,9 @@ font_data = ExtResource( 2 )
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 5.16943
-margin_top = -10.1545
+margin_top = -13.6536
 margin_right = 5.16943
-margin_bottom = -10.1545
+margin_bottom = -13.6536
 script = ExtResource( 3 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -139,8 +138,6 @@ text = "Join Game"
 __meta__ = {
 "_edit_use_anchors_": false
 }
-
-[node name="Main" parent="Start_Menu/Button_Join" instance=ExtResource( 4 )]
 
 [node name="Button_Options" type="Button" parent="Start_Menu"]
 anchor_left = 0.5
@@ -304,5 +301,3 @@ text = "Back"
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 5 )
-
-[editable path="Start_Menu/Button_Join/Main"]
