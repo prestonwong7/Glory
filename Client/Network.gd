@@ -25,7 +25,7 @@ func _ready():
 	get_tree().connect("server_disconnected", self, "_server_disconnected")
 
 func join_server():
-	var ip = "127.0.0.1"
+	var ip = get_tree().get_root().get_node("Main_Menu/Main/Address").get_text()
 	var host = NetworkedMultiplayerENet.new()
 	host.set_compression_mode(NetworkedMultiplayerENet.COMPRESS_RANGE_CODER)
 	host.create_client(ip, DEFAULT_PORT)
@@ -50,7 +50,11 @@ func quit_game():
 	get_tree().set_network_peer(null)
 	players.clear()
 
-# Puppet - Only if you are not master of the node
+func get_player_list():
+	return players.values()
+
+# All functions called by server are puppets, not remote
+# Puppet - Only if you are not master of the node, called by the server
 puppet func register_player(id, name):
 	players[id] = name
 	emit_signal("players_updated")
@@ -66,5 +70,5 @@ puppet func pre_configure_game():
 	var world = load("res://FPS tutorial/Testing_Area.tscn").instance()
 	get_tree().get_root().add_child(world)
 	
-	# Start game
+	# Tell server to start game, all clients will tell server
 	rpc_id(1, "post_start_game")

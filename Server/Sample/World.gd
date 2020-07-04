@@ -9,4 +9,5 @@ func spawn_player(spawn_pos, id):
 	player.name = String(id) # Important
 	player.set_network_master(id) # Important
 	
-	$Players.add_child(player)
+	var player_node = get_tree().get_root().get_node("Testing_Area/Players")
+	player_node.add_child(player)

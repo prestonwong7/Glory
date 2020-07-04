@@ -11,7 +11,7 @@ func _ready():
 
 func _on_JoinButton_pressed():
 	Network.my_name = $VBox/HBox/LineEdit.text
-	Network.connect_to_server()
+	Network.join_server()
 
 
 func _on_connection_success():
@@ -19,7 +19,6 @@ func _on_connection_success():
 	status.modulate = Color.green
 	
 	$Panel.show()
-
 
 func _on_connection_failed():
 	status.text = "Connection Failed, trying again"

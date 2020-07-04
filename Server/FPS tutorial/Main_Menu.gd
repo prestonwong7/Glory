@@ -46,7 +46,6 @@ func start_menu_button_pressed(button_name):
 		world.get_node("/root/Testing_Area/Players").add_child(player_scene.instance())
 		
 	elif button_name == "host":
-		print("hi")
 		Network.start_server()
 		_set_status("Waiting for player...", true)
 		
@@ -61,30 +60,4 @@ func _set_status(text, isok):
 	else:
 		status_ok.set_text("")
 		status_fail.set_text(text)
-
-func pre_configure_game():
-	get_tree().get_root().get_node("Main_Menu").hide()
-	
-	var world = load("res://FPS tutorial/Testing_Area.tscn").instance()
-	get_tree().get_root().add_child(world)
-	
-	# Load all players
-	for p in players:
-		var player_scene = preload("res://FPS tutorial/Player.tscn").instance()
-#		player_scene.global_transform.origin = Vector3(p, 50, 0)
-		player_scene.set_name(str(p))
-		player_scene.set_network_master(p)
-		world.get_node("/root/Testing_Area/Players").add_child(player_scene)
-
-	# Tell server (remember, server is always ID=1) that this peer is done pre-configuring.
-	# Rpc = all peers
-	rpc("pre_configure_game")
-
-# Called by the client when pre_start_game	
-remote func post_start_game():
-	var caller_id = get_tree().get_rpc_sender_id()
-	var world = get_node("/root/Testing_Area")
-	
-	for player in world.get_node("Players").get_children():
-		world.rpc_id(caller_id, "spawn_player", player.position, player.get_network_master())
 

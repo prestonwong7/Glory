@@ -135,7 +135,7 @@ margin_top = -190.0
 margin_right = 155.0
 margin_bottom = -140.0
 custom_fonts/font = SubResource( 5 )
-text = "Join Game"
+text = "Join a Game"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -180,17 +180,6 @@ margin_top = 173.684
 margin_right = 43.1579
 margin_bottom = 187.684
 rect_scale = Vector2( 8.01567, 4.59893 )
-
-[node name="Address" type="LineEdit" parent="Start_Menu"]
-margin_left = -148.0
-margin_top = 177.0
-margin_right = -39.0
-margin_bottom = 201.0
-rect_rotation = -0.222553
-rect_scale = Vector2( 2.84032, 2.94511 )
-rect_pivot_offset = Vector2( -82.6931, 0 )
-text = "127.0.0.1"
-max_length = 10
 
 [node name="Options_Menu" type="Panel" parent="."]
 visible = false
@@ -301,19 +290,27 @@ custom_fonts/font = SubResource( 5 )
 text = "Back"
 
 [node name="Main" type="Control" parent="."]
+visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
+margin_left = 350.0
+margin_top = 133.947
+margin_right = -117.0
+margin_bottom = -1.05261
 script = ExtResource( 4 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="VBox" type="VBoxContainer" parent="Main"]
-margin_left = 403.958
-margin_top = 108.679
-margin_right = 511.958
-margin_bottom = 366.679
+margin_left = 203.958
+margin_top = 36.0472
+margin_right = 311.958
+margin_bottom = 408.047
 custom_constants/separation = 100
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="Title" type="Label" parent="Main/VBox"]
 margin_right = 108.0
@@ -362,6 +359,9 @@ margin_bottom = 404.0
 [node name="Players" type="RichTextLabel" parent="Main/Panel"]
 margin_right = 187.0
 margin_bottom = 274.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="ReadyButton" type="Button" parent="Main/Panel"]
 margin_left = 65.0016
@@ -369,6 +369,23 @@ margin_top = 232.003
 margin_right = 128.002
 margin_bottom = 252.003
 text = "Ready"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Address" type="LineEdit" parent="Main"]
+margin_left = -9.21051
+margin_top = 62.2105
+margin_right = 84.7895
+margin_bottom = 86.2105
+rect_rotation = -0.222553
+rect_scale = Vector2( 2.84032, 2.94511 )
+rect_pivot_offset = Vector2( -82.6931, 0 )
+text = "127.0.0.1"
+max_length = 10
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 5 )

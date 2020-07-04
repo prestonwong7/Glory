@@ -4,8 +4,8 @@ extends Control
 
 var start_menu
 var my_info = {
-	 name = "Johnson Magenta", 
-	 favorite_color = Color8(255, 0, 255) 
+	name = "Johnson Magenta",
+	favorite_color = Color8(255, 0, 255)
 }
 
 onready var status_ok
@@ -13,6 +13,7 @@ onready var status_fail
 onready var address
 onready var testing_area = preload("res://FPS tutorial/Testing_Area.tscn")
 onready var player_scene = preload("res://FPS tutorial/Player.tscn")
+onready var main
 
 # Signals for GUI
 signal connection_failed()
@@ -30,7 +31,7 @@ func _ready():
 	
 	status_ok = $Start_Menu/StatusOk
 	status_fail = $Start_Menu/StatusFail
-	address = $Start_Menu/Address
+	main = $Main
 #
 #	get_tree().connect("connected_to_server", self, "_connected_ok")
 #	get_tree().connect("connection_failed", self, "_connected_fail")
@@ -52,8 +53,9 @@ func start_menu_button_pressed(button_name):
 		world.get_node("/root/Testing_Area/Players").add_child(player_scene.instance())
 		
 	elif button_name == "join":
-		Network.join_server()
-		_set_status("Connecting...", true)
+#		Network.join_server()
+		main.visible = true
+		_set_status("Enter your name!", true)
 	elif button_name == "quit":
 		get_tree().quit()
 
