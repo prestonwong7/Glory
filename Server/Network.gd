@@ -68,16 +68,10 @@ func pre_configure_game():
 	var world = load("res://FPS tutorial/Testing_Area.tscn").instance()
 	get_tree().get_root().add_child(world)
 	
-	# Load all players
-#	for p in players:
-#		var player_scene = load("res://FPS tutorial/Player.tscn").instance()
-#		player_scene.global_transform.origin = Vector3(p, 200, 0)
-#		player_scene.set_name(str(p))
-#		player_scene.set_network_master(p)
-#		world.get_node("/root/Testing_Area/Players").add_child(player_scene)
-	# Spawn all the people
+	# Spawn all players
 	for id in players:
-		get_node("/root/Testing_Area").spawn_player(Vector3(0,52,0), id)
+		print("id: ",id)
+		get_node("/root/Testing_Area").spawn_player(Vector3(randi()%10,52,0), id)
 		
 	# Tell server (remember, server is always ID=1) that this peer is done pre-configuring.
 	# Rpc = all peers
