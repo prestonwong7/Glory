@@ -33,14 +33,15 @@ var check_double_tap = false
 var animation_manager
 
 # To make weapon shoot
-puppet var current_weapon_name = "UNARMED"
-puppet var weapons = {"UNARMED":null, "KNIFE":null, "PISTOL":null, "RIFLE":null}
 const WEAPON_NUMBER_TO_NAME = {0:"UNARMED", 1:"KNIFE", 2:"PISTOL", 3:"RIFLE"}
 const WEAPON_NAME_TO_NUMBER = {"UNARMED":0, "KNIFE":1, "PISTOL":2, "RIFLE":3}
-puppet var changing_weapon = false
-puppet var changing_weapon_name = "UNARMED"
 
-var reloading_weapon = false
+# Puppets
+puppet var weapons = {"UNARMED":null, "KNIFE":null, "PISTOL":null, "RIFLE":null}
+puppet var current_weapon_name = "UNARMED"
+puppet var changing_weapon_name = "UNARMED"
+puppet var changing_weapon = false
+puppet var reloading_weapon = false
 
 # UI
 var health = 100
@@ -282,7 +283,6 @@ func process_input(delta):
 		if reloading_weapon == false:
 			if WEAPON_NUMBER_TO_NAME[weapon_change_number] != current_weapon_name:
 				changing_weapon_name = WEAPON_NUMBER_TO_NAME[weapon_change_number]
-				rset("rset_changing_weapon_name", weapon_change_number)
 				changing_weapon = true
 				mouse_scroll_value = weapon_change_number
 	
@@ -342,6 +342,7 @@ func process_movement(delta):
 	# originally, velocity = move_and_slide
 	move_and_slide(velocity, Vector3.UP) # jumping now connects to other screen without velocity =
 	rpc_unreliable("rpc_move_character", velocity) # upc to server
+#	rset_id(1,"puppet_velocity", velocity)
 
 func process_changing_weapons():
 	
@@ -376,6 +377,9 @@ func process_changing_weapons():
 				changing_weapon = false
 				current_weapon_name = changing_weapon_name
 				changing_weapon_name = ""
+				rset("changing_weapon", changing_weapon)
+				rset("current_weapon_name", current_weapon_name)
+				rset("changing_weapon_name", changing_weapon_name)
 
 func jump():
 	if is_on_floor():
@@ -494,7 +498,7 @@ func fire_bullet():
 		return
 		
 	weapons[current_weapon_name].fire_weapon()
-	rpc("rpc_fire_weapon", current_weapon_name)
+#	rpc("rpc_fire_weapon", current_weapon_name)
 	
 func process_reloading():
 	if reloading_weapon == true:
@@ -502,7 +506,7 @@ func process_reloading():
 		# just so that the player isn't unarmed
 		if current_weapon != null:
 			current_weapon.reload_weapon()
-			rpc("rpc_reload_weapon", current_weapon)
+			rpc("rpc_reload_weapon", current_weapon_name)
 		reloading_weapon = false
 	
 func process_UI():
@@ -523,27 +527,24 @@ func add_health(additional_health):
 	health += additional_health
 	health = clamp(health, 0, MAX_HEALTH)
 
-remote func rset_changing_weapon_name(weapon_change_number):
-	changing_weapon_name = WEAPON_NUMBER_TO_NAME[weapon_change_number]
-
-remote func rpc_move_character(velocity):
+puppet func rpc_move_character(velocity):
 	move_and_slide(velocity, Vector3.UP)
 	
-remote func bullet_hit(damage, bullet_global_trans):
-	health -= damage
-
-remote func rpc_rotate_character_y(rotate_y):
+puppet func rpc_rotate_character_y(rotate_y):
 	self.rotate_y(deg2rad(rotate_y))
-	
-remote func rpc_rotate_character_x(rotate_x):
+
+puppet func rpc_rotate_character_x(rotate_x):
 	rotation_helper.rotate_x(deg2rad(rotate_x))
 
-remote func rpc_fire_weapon(current_weapon_name):
+puppet func bullet_hit(damage, bullet_global_trans):
+	health -= damage
+
+puppet func rpc_fire_weapon(current_weapon_name):
 	self.weapons[current_weapon_name].fire_weapon()
 
-remote func rpc_fire_weapon_animation(fire_animation_name):
+puppet func rpc_fire_weapon_animation(fire_animation_name):
 	self.animation_manager.set_animation(fire_animation_name)
 	
-remote func rpc_reload_weapon(current_weapon):
-	self.current_weapon.reload_weapon()
+puppet func rpc_reload_weapon(current_weapon_name):
+	self.weapons[current_weapon_name].reload_weapon()
 	

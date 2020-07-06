@@ -89,7 +89,7 @@ func reload_weapon():
 	
 
 remote func rpc_equip_rifle(player_node):
-	self.player_node.animation_manager.set_animation("Rifle_equip") #self needed to refer to this player
+	self.player_node.animation_manager.set_animation("Rifle_equip") # self needed to refer to this player
 	
 remote func rpc_unequip_rifle(player_node):
 	self.player_node.animation_manager.set_animation("Rifle_unequip")
