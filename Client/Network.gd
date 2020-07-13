@@ -49,6 +49,7 @@ func _server_disconnected():
 func quit_game():
 	get_tree().set_network_peer(null)
 	players.clear()
+	get_tree().quit()
 
 func get_player_list():
 	return players.values()

@@ -88,6 +88,20 @@ var simple_audio_player = preload("res://FPS tutorial/Simple_Audio_Player.tscn")
 var mouse_scroll_value = 0
 const MOUSE_SENSITIVITY_SCROLL_WHEEL = 0.3
 
+var x_delta = 0 
+var rotate_y = 0
+var data = {
+	"speed" : speed,
+	"velocity" : velocity,
+	"position" : global_transform.origin
+}
+
+var rotation_data = {
+	"x_delta" : 0,
+	"rotate_y" : 0,
+	"move_rotation" : false
+}
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	# Player weapon stuff below
@@ -117,11 +131,10 @@ func _ready():
 	changing_weapon_name = "UNARMED"
 	
 	UI_status_label = $HUD/Panel/Gun_label
-	
-	#flashlight = $Rotation_Helper/Flashlight
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
+	rotation_data["move_rotation"] = false
 	if is_network_master():
 		camera.make_current() # needed here for some reason so player has their own camera
 	
@@ -170,23 +183,26 @@ func _process(delta):
 func _input(event):
 	if is_network_master():
 		if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
-			var rotate_y = -event.relative.x * mouse_sensitivity
+			rotate_y = -event.relative.x * mouse_sensitivity
 			self.rotate_y(deg2rad(rotate_y)) # rotates moving left and right
-			rpc_unreliable("rpc_rotate_character_y", rotate_y)
 			
-			var x_delta = event.relative.y * mouse_sensitivity
+			x_delta = event.relative.y * mouse_sensitivity
 			if x_delta + camera_x_rotation > - 90 and x_delta + camera_x_rotation < 90:
 				rotation_helper.rotate_x(deg2rad(x_delta)) # rotates on x axis ( or moving up and down)
 				camera_x_rotation += x_delta
-				rpc_unreliable("rpc_rotate_character_x", x_delta)
 			
+			rotation_data["rotate_y"] = rotate_y
+			rotation_data["x_delta"] = x_delta
+			rotation_data["move_rotation"] = true
+		
+		# Changing weapon using mouse scroll wheel	
 		if event is InputEventMouseButton and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 			if event.button_index == BUTTON_WHEEL_UP or event.button_index == BUTTON_WHEEL_DOWN:
 				if event.button_index == BUTTON_WHEEL_UP:
 					mouse_scroll_value += MOUSE_SENSITIVITY_SCROLL_WHEEL
 				elif event.button_index == BUTTON_WHEEL_DOWN:
 					mouse_scroll_value -= MOUSE_SENSITIVITY_SCROLL_WHEEL
-				
+					
 				mouse_scroll_value = clamp(mouse_scroll_value, 0, WEAPON_NAME_TO_NUMBER.size() - 1)
 				
 				if changing_weapon == false:
@@ -204,6 +220,7 @@ func _physics_process(delta):
 		process_changing_weapons()
 		process_reloading()
 		process_UI()
+		send_data()
 
 func process_input(delta):
 	# Get direction player is facing
@@ -296,7 +313,7 @@ func process_input(delta):
 					if current_weapon.ammo_in_weapon > 0:
 						if animation_manager.current_state == current_weapon.IDLE_ANIM_NAME:
 							animation_manager.set_animation(current_weapon.FIRE_ANIM_NAME)
-							rpc("rpc_fire_weapon_animation", current_weapon.FIRE_ANIM_NAME)
+#							rpc_id(1, "rpc_fire_weapon_animation", current_weapon.FIRE_ANIM_NAME)
 					else:
 						reloading_weapon = true
 	
@@ -341,7 +358,7 @@ func process_movement(delta):
 	
 	# originally, velocity = move_and_slide
 	move_and_slide(velocity, Vector3.UP) # jumping now connects to other screen without velocity =
-	rpc_unreliable("rpc_move_character", velocity) # upc to server
+#	rpc_unreliable_id(1, "rpc_move_character", velocity) # upc to server
 #	rset_id(1,"puppet_velocity", velocity)
 
 func process_changing_weapons():
@@ -377,9 +394,6 @@ func process_changing_weapons():
 				changing_weapon = false
 				current_weapon_name = changing_weapon_name
 				changing_weapon_name = ""
-				rset("changing_weapon", changing_weapon)
-				rset("current_weapon_name", current_weapon_name)
-				rset("changing_weapon_name", changing_weapon_name)
 
 func jump():
 	if is_on_floor():
@@ -506,7 +520,7 @@ func process_reloading():
 		# just so that the player isn't unarmed
 		if current_weapon != null:
 			current_weapon.reload_weapon()
-			rpc("rpc_reload_weapon", current_weapon_name)
+#			rpc_id(1, "rpc_reload_weapon", current_weapon_name)
 		reloading_weapon = false
 	
 func process_UI():
@@ -522,11 +536,27 @@ func create_sound(sound_name, position=null):
 	var scene_root = get_tree().root.get_children()[0]
 	scene_root.add_child(audio_clone)
 	audio_clone.play_sound(sound_name, position)
+
+func send_data():
+	var data = {
+		"speed" : speed,
+		"velocity" : velocity,
+		"position" : global_transform.origin
+	}
+	rpc_id(1, "data_receive", data)
+	rpc_id(1, "update_rotation", rotation_data)
 	
 func add_health(additional_health):
 	health += additional_health
 	health = clamp(health, 0, MAX_HEALTH)
 
+remote func update_puppet(puppet_data, puppet_data_rotation):
+	speed = puppet_data["speed"]
+	velocity = puppet_data["velocity"]
+	x_delta = puppet_data_rotation["x_delta"]
+	rotate_y = puppet_data_rotation["rotate_y"]
+#	move_rotation = puppet_data_rotation["move_rotation"]
+	
 puppet func rpc_move_character(velocity):
 	move_and_slide(velocity, Vector3.UP)
 	

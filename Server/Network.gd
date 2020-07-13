@@ -70,10 +70,7 @@ func pre_configure_game():
 	
 	# Spawn all players
 	for id in players:
-<<<<<<< HEAD
-=======
 		print("id: ",id)
->>>>>>> 38602187f87f2ec718dd245a3e3ab5ef4a1888d6
 		get_node("/root/Testing_Area").spawn_player(Vector3(randi()%10,52,0), id)
 		
 	# Tell server (remember, server is always ID=1) that this peer is done pre-configuring.

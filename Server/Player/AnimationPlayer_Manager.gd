@@ -55,6 +55,8 @@ func _ready():
 	connect("animation_finished", self, "animation_ended")
 	
 func set_animation(animation_name):
+#	print("current state: ", current_state)
+#	print("animation name: ", animation_name)
 	if animation_name == current_state:
 		print("AnimationPlayer_Manager.gd -- Warning: Animation is ", animation_name)
 		return true
